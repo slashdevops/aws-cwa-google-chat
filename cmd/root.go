@@ -34,8 +34,8 @@ var cfg config.Config
 var rootCmd = &cobra.Command{
 	Use:   "aws-cwa-sns-google-chat",
 	Short: "Send AWS CloudWatch Alarms to Google Chat using webhooks",
-	Long: `This application could be used to send messages to a Google Chat room using webhooks from
-    a generated CloudWatch Alarm read from and AWS SNS Topic.`,
+	Long: `This application could be used to send AWS CloudWatch Alarms messages
+read from AWS SNS Topic to a Google Chat room using incoming webhooks.`,
 	Run: func(cmd *cobra.Command, args []string) {},
 }
 
@@ -60,9 +60,9 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogLevel, "log-level", "l", config.DefaultLogLevel, "set the log level [panic|fatal|error|warn|info|debug|trace]")
 }
 
-// initConfig reads in config file and ENV variables if set.
+// initConfig reads in config file and ENV variables.
 func initConfig() {
-	viper.SetEnvPrefix("idpscim") // allow to read in from environment
+	viper.SetEnvPrefix("cwagc") // allow to read in from environment
 
 	envVars := []string{
 		"log_level",
@@ -98,10 +98,14 @@ func initConfig() {
 		fileName := fileNameExt[0 : len(fileNameExt)-len(fileExtension)]
 		viper.SetConfigName(fileName)
 
-		log.Debugf("configuration file: dir: %s, name: %s, ext: %s", fileDir, fileName, fileExtension)
+		log.WithFields(log.Fields{
+			"directory": fileDir,
+			"file":      fileName,
+			"extension": fileExtensionName,
+		}).Debug("configuration file")
 
 		if err := viper.ReadInConfig(); err == nil {
-			log.Infof("using config file: %s", viper.ConfigFileUsed())
+			log.WithFields(log.Fields{"file": viper.ConfigFileUsed()}).Info("using config file")
 		}
 	}
 
