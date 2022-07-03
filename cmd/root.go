@@ -17,42 +17,114 @@ package cmd
 
 import (
 	"os"
+	"path/filepath"
+	"strings"
 
+	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/pkg/errors"
+	log "github.com/sirupsen/logrus"
+	"github.com/slashdevops/aws-cwa-sns-google-chat/internal/config"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
+
+var cfg config.Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "aws-cwa-sns-google-chat",
-	Short: "A brief description of your application",
-	Long: `A longer description that spans multiple lines and likely contains
-examples and usage of using your application. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
+	Short: "Send AWS CloudWatch Alarms to Google Chat using webhooks",
+	Long: `This application could be used to send messages to a Google Chat room using webhooks from
+    a generated CloudWatch Alarm read from and AWS SNS Topic.`,
+	Run: func(cmd *cobra.Command, args []string) {},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
-	err := rootCmd.Execute()
-	if err != nil {
-		os.Exit(1)
+	if cfg.IsLambda {
+		lambda.Start(rootCmd.Execute)
 	}
+	cobra.CheckErr(rootCmd.Execute())
 }
 
 func init() {
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
+	cfg = config.New()
+	cfg.IsLambda = len(os.Getenv("_LAMBDA_SERVER_PORT")) > 0
 
-	// rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.aws-cwa-sns-google-chat.yaml)")
+	cobra.OnInitialize(initConfig)
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	rootCmd.PersistentFlags().StringVarP(&cfg.ConfigFile, "config-file", "c", config.DefaultConfigFile, "configuration file")
+	rootCmd.PersistentFlags().BoolVarP(&cfg.Debug, "debug", "d", config.DefaultDebug, "fast way to set the log-level to debug")
+	rootCmd.PersistentFlags().StringVarP(&cfg.LogFormat, "log-format", "f", config.DefaultLogFormat, "set the log format")
+	rootCmd.PersistentFlags().StringVarP(&cfg.LogLevel, "log-level", "l", config.DefaultLogLevel, "set the log level [panic|fatal|error|warn|info|debug|trace]")
+}
+
+// initConfig reads in config file and ENV variables if set.
+func initConfig() {
+	viper.SetEnvPrefix("idpscim") // allow to read in from environment
+
+	envVars := []string{
+		"log_level",
+		"log_format",
+		"debug",
+	}
+
+	for _, e := range envVars {
+		if err := viper.BindEnv(e); err != nil {
+			log.Fatalf(errors.Wrap(err, "cannot bind environment variable").Error())
+		}
+	}
+
+	// when use a lambda, we need to read the config from the environment variables only
+	if !cfg.IsLambda {
+		home, err := os.UserHomeDir()
+		cobra.CheckErr(err)
+		viper.AddConfigPath(home)
+
+		currentDir, err := os.Getwd()
+		cobra.CheckErr(err)
+		viper.AddConfigPath(currentDir)
+
+		fileDir := filepath.Dir(cfg.ConfigFile)
+		viper.AddConfigPath(fileDir)
+
+		// Search config in home directory with name "downloader" (without extension).
+		fileExtension := filepath.Ext(cfg.ConfigFile)
+		fileExtensionName := fileExtension[1:]
+		viper.SetConfigType(fileExtensionName)
+
+		fileNameExt := filepath.Base(cfg.ConfigFile)
+		fileName := fileNameExt[0 : len(fileNameExt)-len(fileExtension)]
+		viper.SetConfigName(fileName)
+
+		log.Debugf("configuration file: dir: %s, name: %s, ext: %s", fileDir, fileName, fileExtension)
+
+		if err := viper.ReadInConfig(); err == nil {
+			log.Infof("using config file: %s", viper.ConfigFileUsed())
+		}
+	}
+
+	if err := viper.Unmarshal(&cfg); err != nil {
+		log.Fatalf(errors.Wrap(err, "cannot unmarshal config").Error())
+	}
+
+	switch strings.ToLower(cfg.LogFormat) {
+	case "json":
+		log.SetFormatter(&log.JSONFormatter{})
+	case "text":
+		log.SetFormatter(&log.TextFormatter{})
+	default:
+		log.Warnf("unknown log format: %s, using text", cfg.LogFormat)
+		log.SetFormatter(&log.TextFormatter{})
+	}
+
+	if cfg.Debug {
+		cfg.LogLevel = "debug"
+	}
+
+	// set the configured log level
+	if level, err := log.ParseLevel(strings.ToLower(cfg.LogLevel)); err == nil {
+		log.SetLevel(level)
+	}
 }

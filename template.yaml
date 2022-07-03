@@ -3,7 +3,7 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 
 Description: |
-  Send AWS CloudWatch Alarms to Google Chat using incoming webhooks.
+  Send AWS CloudWatch Alarms to Google Chat using webhooks.
 
   Project URL: https://github.com/slashdevops/aws-cwa-sns-google-chat
 

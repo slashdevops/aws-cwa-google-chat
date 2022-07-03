@@ -10,4 +10,4 @@
 [![Release](https://github.com/slashdevops/aws-cwa-sns-google-chat/actions/workflows/release.yml/badge.svg)](https://github.com/slashdevops/aws-cwa-sns-google-chat/actions/workflows/release.yml)
 [![release](https://img.shields.io/github/release/slashdevops/aws-cwa-sns-google-chat/all.svg)](https://github.com/slashdevops/aws-cwa-sns-google-chat/releases)
 
-Send AWS CloudWatch Alarms to Google Chat using incoming webhooks
+Send AWS CloudWatch Alarms to Google Chat using webhooks
