@@ -23,7 +23,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
-	"github.com/slashdevops/aws-cwa-sns-google-chat/internal/config"
+	"github.com/slashdevops/aws-cwa-google-chat/internal/config"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -32,7 +32,7 @@ var cfg config.Config
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
-	Use:   "aws-cwa-sns-google-chat",
+	Use:   "aws-cwa-google-chat",
 	Short: "Send AWS CloudWatch Alarms to Google Chat using webhooks",
 	Long: `This application could be used to send AWS CloudWatch Alarms messages
 read from AWS SNS Topic to a Google Chat room using incoming webhooks.`,
@@ -58,6 +58,8 @@ func init() {
 	rootCmd.PersistentFlags().BoolVarP(&cfg.Debug, "debug", "d", config.DefaultDebug, "fast way to set the log-level to debug")
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogFormat, "log-format", "f", config.DefaultLogFormat, "set the log format")
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogLevel, "log-level", "l", config.DefaultLogLevel, "set the log level [panic|fatal|error|warn|info|debug|trace]")
+
+	rootCmd.PersistentFlags().StringVarP(&cfg.WebhookURL, "webhook-url", "u", config.DefaultWebhookURL, "Incoming Webhook URL from Google Chat")
 }
 
 // initConfig reads in config file and ENV variables.
@@ -68,6 +70,7 @@ func initConfig() {
 		"log_level",
 		"log_format",
 		"debug",
+		"webhook_url",
 	}
 
 	for _, e := range envVars {
@@ -130,5 +133,9 @@ func initConfig() {
 	// set the configured log level
 	if level, err := log.ParseLevel(strings.ToLower(cfg.LogLevel)); err == nil {
 		log.SetLevel(level)
+	}
+
+	if cfg.WebhookURL == "" {
+		log.Fatalf("webhook-url is required")
 	}
 }

@@ -2,13 +2,13 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Creates an AWS ECR Repository
-  Deploy as: slashdevops-ecr-repo-aws-cwa-sns-google-chat
+  Deploy as: slashdevops-ecr-repo-aws-cwa-google-chat
 
 Parameters:
   RepositoryName:
     Type: String
     Description: Repository name, should follow the pattern namespace/repositoryname
-    Default: slashdevops/aws-cwa-sns-google-chat
+    Default: slashdevops/aws-cwa-google-chat
     MinLength: 2
     MaxLength: 100
     AllowedPattern: "(?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)*[a-z0-9]+(?:[._-][a-z0-9]+)*"
@@ -28,14 +28,14 @@ Parameters:
 
       amd64, arm64v8
 
-      ## Where can I run  SlashDevOps aws-cwa-sns-google-chat images?
+      ## Where can I run  SlashDevOps aws-cwa-google-chat images?
 
-      You can run  SlashDevOps aws-cwa-sns-google-chat images in any Docker based environment. Examples include, your laptop, in Amazon EC2 instances, and Amazon ECS/EKS clusters.
+      You can run  SlashDevOps aws-cwa-google-chat images in any Docker based environment. Examples include, your laptop, in Amazon EC2 instances, and Amazon ECS/EKS clusters.
 
-      ## How to run SlashDevOps aws-cwa-sns-google-chat images?
+      ## How to run SlashDevOps aws-cwa-google-chat images?
 
       ```bash
-      docker run --rm public.ecr.aws/l2n7y5s7/slashdevops/aws-cwa-sns-google-chat --help
+      docker run --rm public.ecr.aws/l2n7y5s7/slashdevops/aws-cwa-google-chat --help
       ```
 
   AboutText:
@@ -44,15 +44,15 @@ Parameters:
     Default: |-
       ## Quick reference
 
-      Maintained by: [The SlashDevOps aws-cwa-sns-google-chat Team](https://github.com/slashdevops/aws-cwa-sns-google-chat)
+      Maintained by: [The SlashDevOps aws-cwa-google-chat Team](https://github.com/slashdevops/aws-cwa-google-chat)
 
-      Where to get help: [Repository Issues](https://github.com/slashdevops/aws-cwa-sns-google-chat/issues)
+      Where to get help: [Repository Issues](https://github.com/slashdevops/aws-cwa-google-chat/issues)
 
       ## Supported tags and respective `dockerfile` links
 
-      Check out the [Release versions of the repository](https://github.com/slashdevops/aws-cwa-sns-google-chat/releases) for the latest Dockerfiles.
+      Check out the [Release versions of the repository](https://github.com/slashdevops/aws-cwa-google-chat/releases) for the latest Dockerfiles.
 
-      ## What is aws-cwa-sns-google-chat?
+      ## What is aws-cwa-google-chat?
 
       Keep your [AWS Single Sign-On (SSO) groups and users](https://aws.amazon.com/single-sign-on/) in sync with your [Google Workspace directory](https://workspace.google.com/) using and [AWS Lambda function](https://aws.amazon.com/lambda/).
 
@@ -75,12 +75,12 @@ Parameters:
   GithubOpenidRoleStackExportName:
     Type: String
     Description: The base CloudFormation stack export name that contains the IAM Role for Github OIDC Provider
-    Default: slashdevops-iam-role-aws-cwa-sns-google-chat
+    Default: slashdevops-iam-role-aws-cwa-google-chat
 
   StackExportName:
     Description: This value will be used to prefix the export values of the template
     Type: String
-    Default: slashdevops-ecr-repo-aws-cwa-sns-google-chat
+    Default: slashdevops-ecr-repo-aws-cwa-google-chat
     AllowedPattern: '[a-z0-9\-]+'
     MinLength: 2
     MaxLength: 64

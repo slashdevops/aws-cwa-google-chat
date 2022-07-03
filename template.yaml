@@ -5,7 +5,7 @@ Transform: AWS::Serverless-2016-10-31
 Description: |
   Send AWS CloudWatch Alarms to Google Chat using webhooks.
 
-  Project URL: https://github.com/slashdevops/aws-cwa-sns-google-chat
+  Project URL: https://github.com/slashdevops/aws-cwa-google-chat
 
 Metadata:
   AWS::CloudFormation::Interface:
@@ -42,11 +42,11 @@ Metadata:
           - SCIMAccessTokenSecretName
 
   AWS::ServerlessRepo::Application:
-    Name: aws-cwa-sns-google-chat
+    Name: aws-cwa-google-chat
     Description: |
       keep your AWS Single Sign-On (SSO) groups and users in sync with your
       Google Workspace directory using and AWS Lambda function.
-    Author: slashdevops aws-cwa-sns-google-chat Team
+    Author: slashdevops aws-cwa-google-chat Team
     SpdxLicenseId: Apache-2.0
     LicenseUrl: LICENSE
     ReadmeUrl: README.md
@@ -58,18 +58,18 @@ Metadata:
       - AWS
       - Go
       - Google-Workspace
-      - aws-cwa-sns-google-chat
+      - aws-cwa-google-chat
       - Groups
       - Users
-    HomePageUrl: https://github.com/slashdevops/aws-cwa-sns-google-chat
+    HomePageUrl: https://github.com/slashdevops/aws-cwa-google-chat
     SemanticVersion: 0.0.1 # will be overwritten by the CI/CD pipeline
-    SourceCodeUrl: https://github.com/slashdevops/aws-cwa-sns-google-chat
+    SourceCodeUrl: https://github.com/slashdevops/aws-cwa-google-chat
 
 Parameters:
   ScheduleExpression:
     Type: String
     Description: |
-      Schedule for trigger the execution of aws-cwa-sns-google-chat (see EventBridge rule schedule expressions)
+      Schedule for trigger the execution of aws-cwa-google-chat (see EventBridge rule schedule expressions)
       Reference: https://docs.aws.amazon.com/eventbridge/latest/userguide/eb-create-rule-schedule.html
     Default: rate(15 minutes)
 
@@ -100,7 +100,7 @@ Parameters:
       Prefix used in the bucket name where the state data will be stored.
       NOTE: This template will use the 'AWS Region' and 'AWS Account ID' as a suffix to the 'bucket name' to avoid conflicts.
       Example: 'BucketNamePrefix-AWS::AccountId-AWS::Region'
-    Default: aws-cwa-sns-google-chat-state
+    Default: aws-cwa-google-chat-state
 
   BucketKey:
     Type: String
@@ -220,10 +220,10 @@ Resources:
     DependsOn:
       - LambdaFunctionLogGroup
     Properties:
-      FunctionName: aws-cwa-sns-google-chat
+      FunctionName: aws-cwa-google-chat
       Description: |
         This Lambda function will sync the AWS SSO groups and users with the Google Workspace directory and it will be triggered by an EventBridge rule.
-        Project: https://github.com/slashdevops/aws-cwa-sns-google-chat
+        Project: https://github.com/slashdevops/aws-cwa-google-chat
       Runtime: go1.x
       MemorySize: !Ref MemorySize
       Handler: dist/idpscim-linux-amd64/idpscim # depends on the path inside .aws-sam/build/LambdaFunction/ during the build process using sam build
@@ -257,7 +257,7 @@ Resources:
     Type: AWS::IAM::Role
     Properties:
       Description: !Sub "This role is used by the Lambda function ${AWS::StackName}"
-      RoleName: !Sub "serverless-aws-cwa-sns-google-chat-${AWS::AccountId}-${AWS::Region}"
+      RoleName: !Sub "serverless-aws-cwa-google-chat-${AWS::AccountId}-${AWS::Region}"
       Path: /
       AssumeRolePolicyDocument:
         Statement:
@@ -353,7 +353,7 @@ Resources:
             Principal:
               Service: "lambda.amazonaws.com"
               #AWS: !GetAtt LambdaFunctionRole.Arn # Fails because circular reference
-              #AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/serverless-aws-cwa-sns-google-chat-${AWS::AccountId}-${AWS::Region}" # Fails in runtime because the roles is not created yet
+              #AWS: !Sub "arn:aws:iam::${AWS::AccountId}:role/serverless-aws-cwa-google-chat-${AWS::AccountId}-${AWS::Region}" # Fails in runtime because the roles is not created yet
             Action:
               - kms:Encrypt
               - kms:Decrypt
@@ -400,7 +400,7 @@ Resources:
           - Sid: AllowAWSLambdaFunction
             Principal:
               AWS:
-                - !Sub "arn:aws:iam::${AWS::AccountId}:role/serverless-aws-cwa-sns-google-chat-${AWS::AccountId}-${AWS::Region}"
+                - !Sub "arn:aws:iam::${AWS::AccountId}:role/serverless-aws-cwa-google-chat-${AWS::AccountId}-${AWS::Region}"
             Effect: Allow
             Action:
               - s3:GetObject
@@ -446,7 +446,7 @@ Resources:
   LambdaFunctionLogGroup:
     Type: AWS::Logs::LogGroup
     Properties:
-      LogGroupName: "/aws/lambda/aws-cwa-sns-google-chat"
+      LogGroupName: "/aws/lambda/aws-cwa-google-chat"
       RetentionInDays: !Ref LogGroupRetentionDays
 
 Outputs:

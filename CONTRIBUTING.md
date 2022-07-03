@@ -2,7 +2,7 @@
 
 __Warning:__ This is a __WIP__
 
-`aws-cwa-sns-google-chat` is [Apache 2.0 licensed](https://github.com/slashdevops/aws-cwa-sns-google-chat/blob/main/LICENSE) and
+`aws-cwa-google-chat` is [Apache 2.0 licensed](https://github.com/slashdevops/aws-cwa-google-chat/blob/main/LICENSE) and
 accepts contributions via GitHub pull requests. This document outlines
 some of the conventions on to make it easier to get your contribution
 accepted.
@@ -17,8 +17,8 @@ Origin (DCO)]([DCO](https://en.wikipedia.org/wiki/Developer_Certificate_of_Origi
 simple statement that you, as a contributor, have the legal right to make the
 contribution.
 
-- All contributors to `aws-cwa-sns-google-chat` must sign off each contribution (usually this means each commit).The signature must contain your real name (sorry, no pseudonyms or anonymous contributions).  If your `user.name` and `user.email` are configured in your Git config, you can sign your commit automatically with `git commit -s`.
-- Each commit sign off will be reviewed by the aws-cwa-sns-google-chat maintainer (by taking a look at their email address and Github profile) before merging the contribution.
+- All contributors to `aws-cwa-google-chat` must sign off each contribution (usually this means each commit).The signature must contain your real name (sorry, no pseudonyms or anonymous contributions).  If your `user.name` and `user.email` are configured in your Git config, you can sign your commit automatically with `git commit -s`.
+- Each commit sign off will be reviewed by the aws-cwa-google-chat maintainer (by taking a look at their email address and Github profile) before merging the contribution.
 
 References:
 
@@ -27,9 +27,9 @@ References:
 - [https://probot.github.io/apps/dco/](https://probot.github.io/apps/dco/)
 - [https://writing.kemitchell.com/2021/07/02/DCO-Not-CLA.html](https://writing.kemitchell.com/2021/07/02/DCO-Not-CLA.html)
 
-## Understanding aws-cwa-sns-google-chat
+## Understanding aws-cwa-google-chat
 
-If you are entirely new to aws-cwa-sns-google-chat, you might want to take a look at:
+If you are entirely new to aws-cwa-google-chat, you might want to take a look at:
 
 - [What is the AWS Single Sign-On SCIM implementation?](https://docs.aws.amazon.com/singlesignon/latest/developerguide/what-is-scim.html)
 - [AWS Single Sign-On](https://aws.amazon.com/es/single-sign-on/)
@@ -37,7 +37,7 @@ If you are entirely new to aws-cwa-sns-google-chat, you might want to take a loo
 
 ### Understanding the code
 
-To get started with developing `aws-cwa-sns-google-chat`, you might want to check the following:
+To get started with developing `aws-cwa-google-chat`, you might want to check the following:
 
 - [https://go.dev/](https://go.dev/)
 - [https://github.com/spf13/cobra](https://github.com/spf13/cobra)

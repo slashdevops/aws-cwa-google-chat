@@ -1,4 +1,4 @@
-module github.com/slashdevops/aws-cwa-sns-google-chat
+module github.com/slashdevops/aws-cwa-google-chat
 
 go 1.18
 

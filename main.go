@@ -15,7 +15,7 @@ limitations under the License.
 */
 package main
 
-import "github.com/slashdevops/aws-cwa-sns-google-chat/cmd"
+import "github.com/slashdevops/aws-cwa-google-chat/cmd"
 
 func main() {
 	cmd.Execute()

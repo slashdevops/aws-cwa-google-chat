@@ -4,7 +4,7 @@ EXECUTABLES = go
 K := $(foreach exec,$(EXECUTABLES),\
   $(if $(shell which $(exec)),some string,$(error "No $(exec) in PATH)))
 
-PROJECT_NAME      ?= aws-cwa-sns-google-chat
+PROJECT_NAME      ?= aws-cwa-google-chat
 PROJECT_NAMESPACE ?= slashdevops
 PROJECT_DEPENDENCIES := $(shell go list -m -f '{{if not (or .Indirect .Main)}}{{.Path}}{{end}}' all)
 
@@ -35,7 +35,7 @@ DOCKER_CONTAINER_REPO  ?= docker.io
 GITHUB_CONTAINER_REPO  ?= ghcr.io
 AWS_ECR_CONTAINER_REPO ?= public.ecr.aws/l2n7y5s7
 
-AWS_SAM_PROJECT_NAME ?= aws-cwa-sns-google-chat
+AWS_SAM_PROJECT_NAME ?= aws-cwa-google-chat
 AWS_SAM_OS           ?= linux
 AWS_SAM_ARCH         ?= amd64
 

@@ -2,7 +2,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Creates an AWS S3 bucket for AWS SAM Serverless to publish the artifacts.
-  Deploy as: slashdevops-s3-aws-cwa-sns-google-chat-sam
+  Deploy as: slashdevops-s3-aws-cwa-google-chat-sam
 
 Parameters:
   BucketNamePrefix:
@@ -11,7 +11,7 @@ Parameters:
       Prefix used in the bucket name
       NOTE: This template will use the 'AWS Region' and 'AWS Account ID' as a suffix to the 'bucket name' to avoid conflicts.
       Example: 'BucketNamePrefix-AWS::AccountId-AWS::Region'
-    Default: slashdevops-aws-cwa-sns-google-chat
+    Default: slashdevops-aws-cwa-google-chat
     MinLength: 5
     MaxLength: 64
     AllowedPattern: "^$|^[a-z0-9.\\-]+$"
@@ -20,7 +20,7 @@ Parameters:
   StackExportName:
     Description: This value will be used to prefix the export values of the template
     Type: String
-    Default: slashdevops-s3-aws-cwa-sns-google-chat-sam
+    Default: slashdevops-s3-aws-cwa-google-chat-sam
     AllowedPattern: '[a-z0-9\-]+'
     MinLength: 2
     MaxLength: 64

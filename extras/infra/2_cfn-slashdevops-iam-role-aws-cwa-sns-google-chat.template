@@ -2,7 +2,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Creates an AWS IAM Role for GitHub OIDC Provider
-  Deploy as: slashdevops-iam-role-aws-cwa-sns-google-chat
+  Deploy as: slashdevops-iam-role-aws-cwa-google-chat
 
 Parameters:
   GitHubOrganization:
@@ -11,7 +11,7 @@ Parameters:
 
   GitHubRepositoryName:
     Type: String
-    Default: "aws-cwa-sns-google-chat"
+    Default: "aws-cwa-google-chat"
 
   GithubOpenidStackExportName:
     Type: String
@@ -21,7 +21,7 @@ Parameters:
   StackExportName:
     Description: This value will be used to prefix the export values of the template
     Type: String
-    Default: slashdevops-iam-role-aws-cwa-sns-google-chat
+    Default: slashdevops-iam-role-aws-cwa-google-chat
     AllowedPattern: '[a-z0-9\-]+'
     MinLength: 2
     MaxLength: 64

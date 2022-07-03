@@ -4,12 +4,12 @@ FROM ${ARCH}/alpine
 ARG OS="linux"
 ARG BIN_ARCH="amd64"
 
-ENV PROJECT_NAME="aws-cwa-sns-google-chat"
+ENV PROJECT_NAME="aws-cwa-google-chat"
 ENV HOME="/app"
 
 LABEL name="${PROJECT_NAME}" \
-  org.opencontainers.image.url="https://github.com/slashdevops/aws-cwa-sns-google-chat" \
-  org.opencontainers.image.source="https://github.com/slashdevops/aws-cwa-sns-google-chat"
+  org.opencontainers.image.url="https://github.com/slashdevops/aws-cwa-google-chat" \
+  org.opencontainers.image.source="https://github.com/slashdevops/aws-cwa-google-chat"
 
 RUN apk add --no-cache --update \
   ca-certificates \

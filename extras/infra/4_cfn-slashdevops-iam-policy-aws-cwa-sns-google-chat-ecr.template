@@ -2,18 +2,18 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Creates an AWS IAM Policy to allows push images on AWS ECR and attach it to Role attached to GitHub OIDC Provider
-  Deploy as: slashdevops-iam-policy-aws-cwa-sns-google-chat-ecr
+  Deploy as: slashdevops-iam-policy-aws-cwa-google-chat-ecr
 
 Parameters:
   GithubOpenidRoleStackExportName:
     Type: String
     Description: The base CloudFormation stack export name that contains the IAM Role for Github OIDC Provider
-    Default: slashdevops-iam-role-aws-cwa-sns-google-chat
+    Default: slashdevops-iam-role-aws-cwa-google-chat
 
   EcrRepositoryStackExportName:
     Type: String
     Description: The base CloudFormation stack export name that contains the IAM OIDC Provider
-    Default: slashdevops-ecr-repo-aws-cwa-sns-google-chat
+    Default: slashdevops-ecr-repo-aws-cwa-google-chat
 
 Resources:
   Policy:

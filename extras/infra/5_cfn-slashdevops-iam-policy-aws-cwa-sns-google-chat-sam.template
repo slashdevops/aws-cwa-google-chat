@@ -2,7 +2,7 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Description: >
   Creates an AWS IAM Policy to allows AWS SAM deploy in a Serverless Repository and attach it to Role attached to GitHub OIDC Provider
-  Deploy as: slashdevops-iam-policy-aws-cwa-sns-google-chat-sam
+  Deploy as: slashdevops-iam-policy-aws-cwa-google-chat-sam
 
 Parameters:
   ApplicationName:
@@ -11,7 +11,7 @@ Parameters:
       The name of the application.
       NOTE: This template will use the 'AWS Region' and 'AWS Account ID' as a suffix to the 'application name' to avoid conflicts.
       Example: 'ApplicationName-AWS::AccountId-AWS::Region'
-    Default: aws-cwa-sns-google-chat
+    Default: aws-cwa-google-chat
     MinLength: 5
     MaxLength: 64
     AllowedPattern: "^$|^[a-z0-9.\\-]+$"
@@ -20,12 +20,12 @@ Parameters:
   GithubOpenidRoleStackExportName:
     Type: String
     Description: The base CloudFormation stack export name that contains the IAM Role for Github OIDC Provider
-    Default: slashdevops-iam-role-aws-cwa-sns-google-chat
+    Default: slashdevops-iam-role-aws-cwa-google-chat
 
   S3BucketStackExportName:
     Type: String
     Description: The base CloudFormation stack export name that contains the IAM Role for Github OIDC Provider
-    Default: slashdevops-s3-aws-cwa-sns-google-chat-sam
+    Default: slashdevops-s3-aws-cwa-google-chat-sam
 
 Resources:
   Policy:
