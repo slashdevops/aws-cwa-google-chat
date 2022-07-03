@@ -6,8 +6,6 @@ K := $(foreach exec,$(EXECUTABLES),\
 
 PROJECT_NAME      ?= aws-cwa-sns-google-chat
 PROJECT_NAMESPACE ?= slashdevops
-PROJECT_MODULES_PATH := $(shell ls -d cmd/*)
-PROJECT_MODULES_NAME := $(foreach dir_name, $(PROJECT_MODULES_PATH), $(shell basename $(dir_name)) )
 PROJECT_DEPENDENCIES := $(shell go list -m -f '{{if not (or .Indirect .Main)}}{{.Path}}{{end}}' all)
 
 GIT_VERSION  ?= $(shell git rev-parse --abbrev-ref HEAD | cut -d "/" -f 2)
@@ -37,17 +35,17 @@ DOCKER_CONTAINER_REPO  ?= docker.io
 GITHUB_CONTAINER_REPO  ?= ghcr.io
 AWS_ECR_CONTAINER_REPO ?= public.ecr.aws/l2n7y5s7
 
-AWS_SAM_PROJECT_NAME ?= idpscim
+AWS_SAM_PROJECT_NAME ?= aws-cwa-sns-google-chat
 AWS_SAM_OS           ?= linux
 AWS_SAM_ARCH         ?= amd64
 
 all: clean test build
 
-mod-update: tidy
+mod-update: mod-tidy
 	$(foreach dep, $(PROJECT_DEPENDENCIES), $(shell go get -u $(dep)))
 	go mod tidy
 
-tidy:
+mod-tidy:
 	go mod tidy
 
 fmt:
@@ -62,23 +60,19 @@ lint:
 generate:
 	go generate $(GO_FILES)
 
-test: tidy fmt vet
+test: mod-tidy fmt vet
 	go test -race -covermode=atomic -coverprofile coverage.out -tags=unit $(GO_FILES)
 
 test-coverage: test
 	go tool cover -html=coverage.out
 
 build:
-	$(foreach proj_mod, $(PROJECT_MODULES_NAME), \
-		$(shell CGO_ENABLED=$(GO_CGO_ENABLED) go build $(GO_LDFLAGS) $(GO_OPTS) -o ./$(BUILD_DIR)/$(proj_mod) ./cmd/$(proj_mod)/ ) \
-	)
+	$(shell CGO_ENABLED=$(GO_CGO_ENABLED) go build $(GO_LDFLAGS) $(GO_OPTS) -o ./$(BUILD_DIR)/ ./ ) \
 
 build-dist: build
 	$(foreach GOOS, $(GO_OS), \
 		$(foreach GOARCH, $(GO_ARCH), \
-			$(foreach proj_mod, $(PROJECT_MODULES_NAME), \
-				$(shell GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=$(GO_CGO_ENABLED) go build $(GO_LDFLAGS) $(GO_OPTS) -o ./$(DIST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH)/$(proj_mod) ./cmd/$(proj_mod)/ ) \
-			) \
+			$(shell GOOS=$(GOOS) GOARCH=$(GOARCH) CGO_ENABLED=$(GO_CGO_ENABLED) go build $(GO_LDFLAGS) $(GO_OPTS) -o ./$(DIST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH) ./ ) \
 		) \
 	)
 
@@ -86,10 +80,8 @@ build-dist-zip:
 	mkdir ./$(DIST_ASSEST_DIR);
 	$(foreach GOOS, $(GO_OS), \
 		$(foreach GOARCH, $(GO_ARCH), \
-			$(foreach proj_mod, $(PROJECT_MODULES_NAME), \
-				zip --junk-paths -r ./$(DIST_ASSEST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH).zip ./$(DIST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH); \
-				shasum -a 256 ./$(DIST_ASSEST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH).zip | cut -d " " -f 1 > ./$(DIST_ASSEST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH).sha256; \
-			) \
+			zip --junk-paths -r ./$(DIST_ASSEST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH).zip ./$(DIST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH); \
+			shasum -a 256 ./$(DIST_ASSEST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH).zip | cut -d " " -f 1 > ./$(DIST_ASSEST_DIR)/$(PROJECT_NAME)-$(GOOS)-$(GOARCH).sha256; \
 		) \
 	)
 
@@ -102,7 +94,7 @@ clean:
 # + https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/building-custom-runtimes.html
 # + https://jiangsc.me/2021/01/24/Lessons-Learnt-On-Deploying-GO-Lambda-Application-on-AWS/
 build-LambdaFunction:
-	CGO_ENABLED=$(GO_CGO_ENABLED) GOOS=$(AWS_SAM_OS) GOARCH=$(AWS_SAM_ARCH) go build $(GO_LDFLAGS) $(GO_OPTS) -o ./$(BUILD_DIR)/AWS_SAM/$(AWS_SAM_PROJECT_NAME) ./cmd/$(AWS_SAM_PROJECT_NAME)/
+	CGO_ENABLED=$(GO_CGO_ENABLED) GOOS=$(AWS_SAM_OS) GOARCH=$(AWS_SAM_ARCH) go build $(GO_LDFLAGS) $(GO_OPTS) -o ./$(BUILD_DIR)/AWS_SAM/$(AWS_SAM_PROJECT_NAME) ./
 	mkdir -p $(ARTIFACTS_DIR)/dist/$(AWS_SAM_PROJECT_NAME)-$(AWS_SAM_OS)-$(AWS_SAM_ARCH)
 	cp ./$(BUILD_DIR)/AWS_SAM/$(AWS_SAM_PROJECT_NAME) $(ARTIFACTS_DIR)/dist/$(AWS_SAM_PROJECT_NAME)-$(AWS_SAM_OS)-$(AWS_SAM_ARCH)/
 
