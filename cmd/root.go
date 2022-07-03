@@ -60,6 +60,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogLevel, "log-level", "l", config.DefaultLogLevel, "set the log level [panic|fatal|error|warn|info|debug|trace]")
 
 	rootCmd.PersistentFlags().StringVarP(&cfg.WebhookURL, "webhook-url", "u", config.DefaultWebhookURL, "Incoming Webhook URL from Google Chat")
+	rootCmd.PersistentFlags().StringVarP(&cfg.AWSAlarmsSource, "aws-alarms-source", "s", config.DefaultAWSAlarmSource, "Alarm source, the AWS Service use as AWS CloudWatch event source [sns|eventbridge]")
 }
 
 // initConfig reads in config file and ENV variables.
@@ -71,6 +72,7 @@ func initConfig() {
 		"log_format",
 		"debug",
 		"webhook_url",
+        "aws_alarms_source",
 	}
 
 	for _, e := range envVars {
