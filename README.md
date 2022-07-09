@@ -17,3 +17,4 @@ Send AWS CloudWatch Alarms to Google Chat using webhooks
 * [Customize Amazon CloudWatch alarm notifications to your local time zone – Part 1](https://aws.amazon.com/blogs/mt/customize-amazon-cloudwatch-alarm-notifications-to-your-local-time-zone-part-1/)
 * [Customize Amazon CloudWatch alarm notifications to your local time zone – Part 2](https://aws.amazon.com/blogs/mt/customize-amazon-cloudwatch-alarm-notifications-to-your-local-time-zone-part-2/)
 * [Alarm events and EventBridge](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/cloudwatch-and-eventbridge.html)
+* [Event Patterns in CloudWatch Events](https://docs.aws.amazon.com/AmazonCloudWatch/latest/events/CloudWatchEventsandEventPatterns.html)

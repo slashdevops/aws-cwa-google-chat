@@ -16,14 +16,21 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/slashdevops/aws-cwa-google-chat/internal/config"
+	"github.com/slashdevops/aws-cwa-google-chat/internal/event"
+	"github.com/slashdevops/aws-cwa-google-chat/internal/gchat"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -36,7 +43,9 @@ var rootCmd = &cobra.Command{
 	Short: "Send AWS CloudWatch Alarms to Google Chat using webhooks",
 	Long: `This application could be used to send AWS CloudWatch Alarms messages
 read from AWS SNS Topic to a Google Chat room using incoming webhooks.`,
-	Run: func(cmd *cobra.Command, args []string) {},
+	RunE: func(cmd *cobra.Command, args []string) error {
+		return handlerRequest(context.Background(), json.RawMessage(args[0]))
+	},
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -72,7 +81,7 @@ func initConfig() {
 		"log_format",
 		"debug",
 		"webhook_url",
-        "aws_alarms_source",
+		"aws_alarms_source",
 	}
 
 	for _, e := range envVars {
@@ -140,4 +149,46 @@ func initConfig() {
 	if cfg.WebhookURL == "" {
 		log.Fatalf("webhook-url is required")
 	}
+}
+
+func handlerRequest(ctx context.Context, b json.RawMessage) error {
+	log.WithFields(
+		log.Fields{
+			"functionName":    ctx.Value("FunctionName"),
+			"functionVersion": ctx.Value("FunctionVersion"),
+			"request":         string(b),
+		},
+	).Debug("handlerRequest")
+
+	var err error
+	var snsEvent events.SNSEvent
+	var cwaEvent events.CloudWatchEvent
+
+	if err = json.Unmarshal(b, &snsEvent); err == nil {
+		return handleSNSEventRequest(&snsEvent)
+	}
+
+	if err = json.Unmarshal(b, &cwaEvent); err == nil {
+		return handleCWAEventRequest(&cwaEvent)
+	}
+
+	if err != nil {
+		log.Errorf("cannot unmarshal request: %s", err)
+	}
+
+	return err
+}
+
+func handleSNSEventRequest(request *events.SNSEvent) error {
+	e := event.NewSNSAlarm(request)
+	c := gchat.NewCard(e)
+
+	h := &http.Client{}
+	s := gchat.NewService(h, cfg.WebhookURL, c)
+
+	return s.Send()
+}
+
+func handleCWAEventRequest(request *events.CloudWatchEvent) error {
+	return fmt.Errorf("not implemented")
 }
