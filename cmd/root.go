@@ -18,7 +18,6 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -165,11 +164,13 @@ func handlerRequest(ctx context.Context, b json.RawMessage) error {
 	var cwaEvent events.CloudWatchEvent
 
 	if err = json.Unmarshal(b, &snsEvent); err == nil {
-		return handleSNSEventRequest(&snsEvent)
+		e := event.NewSNSAlarm(&snsEvent)
+		return handleEventRequest(e)
 	}
 
 	if err = json.Unmarshal(b, &cwaEvent); err == nil {
-		return handleCWAEventRequest(&cwaEvent)
+		e := event.NewSNSCloudWatchEvent(&cwaEvent)
+		return handleEventRequest(e)
 	}
 
 	if err != nil {
@@ -179,16 +180,10 @@ func handlerRequest(ctx context.Context, b json.RawMessage) error {
 	return err
 }
 
-func handleSNSEventRequest(request *events.SNSEvent) error {
-	e := event.NewSNSAlarm(request)
+func handleEventRequest(e gchat.Event) error {
 	c := gchat.NewCard(e)
-
 	h := &http.Client{}
 	s := gchat.NewService(h, cfg.WebhookURL, c)
 
-	return s.Send()
-}
-
-func handleCWAEventRequest(request *events.CloudWatchEvent) error {
-	return fmt.Errorf("not implemented")
+	return s.SendCard()
 }

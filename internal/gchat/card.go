@@ -1,19 +1,23 @@
 package gchat
 
-import "google.golang.org/api/chat/v1"
+import (
+	"io"
 
-type Message interface{}
+	"google.golang.org/api/chat/v1"
+)
+
+type Event interface{}
 
 type Card struct {
 	c *chat.Card
 }
 
-func NewCard(m Message) *Card {
+func NewCard(e Event) *Card {
 	return &Card{
 		c: &chat.Card{},
 	}
 }
 
-func (c *Card) Render() error {
+func (c *Card) Render() io.Reader {
 	return nil
 }
