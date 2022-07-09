@@ -19,5 +19,6 @@ func NewCard(e Event) *Card {
 }
 
 func (c *Card) Render() io.Reader {
+	c.c.Header.Title = "Title"
 	return nil
 }

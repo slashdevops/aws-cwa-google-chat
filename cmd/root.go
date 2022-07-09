@@ -68,7 +68,15 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogFormat, "log-format", "f", config.DefaultLogFormat, "set the log format")
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogLevel, "log-level", "l", config.DefaultLogLevel, "set the log level [panic|fatal|error|warn|info|debug|trace]")
 
-	rootCmd.PersistentFlags().StringVarP(&cfg.WebhookURL, "webhook-url", "u", config.DefaultWebhookURL, "Incoming Webhook URL from Google Chat")
+	rootCmd.PersistentFlags().StringVarP(&cfg.WebhookURL, "webhook-url", "u", config.DefaultWebhookURL, "incoming Webhook URL from Google Chat")
+
+	rootCmd.PersistentFlags().BoolVarP(
+		&cfg.UseChatThreads,
+		"use-chat-threads",
+		"t",
+		config.DefaultUseChatThreads,
+		"create a thread for each alarm, you will see the alarms status in the same thread",
+	)
 }
 
 // initConfig reads in config file and ENV variables.
@@ -188,7 +196,12 @@ func handlerRequest(ctx context.Context, b json.RawMessage) error {
 func handleEventRequest(e gchat.Event) error {
 	h := &http.Client{}
 	c := gchat.NewCard(e)
-	s := gchat.NewService(h, cfg.ChatWebhookURL, c)
+	w, err := gchat.NewWebhookURL(cfg.ChatWebhookURL)
+	if err != nil {
+		log.Errorf("cannot create webhook: %s", err)
+		return err
+	}
+	s := gchat.NewService(h, w, c)
 
 	return s.SendCard()
 }
