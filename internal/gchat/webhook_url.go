@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"strings"
 )
 
 type WebhookURL struct {
@@ -16,34 +15,37 @@ type WebhookURL struct {
 }
 
 func NewWebhookURL(u *url.URL) (*WebhookURL, error) {
-	s := strings.Split(u.Path, "/")
+	// https://regex101.com/r/ifAT7C/1
+	pathRegex := regexp.MustCompile(`(\w{2,})`)
+	regexGroups := pathRegex.FindAllString(u.Path, -1)
+
+	if len(regexGroups) < 4 || len(regexGroups) > 5 {
+		return nil, fmt.Errorf("invalid Google Chat Webhook URL, URL Path invalid")
+	}
 
 	r := regexp.MustCompile(`v\d{1,2}`)
-	apiVersion := s[1]
+	apiVersion := regexGroups[0]
 	if !r.MatchString(apiVersion) {
 		return nil, fmt.Errorf("invalid Google Chat Webhook URL, unsupported API Version: %s", apiVersion)
 	}
 
-	if len(s) < 3 {
-		return nil, fmt.Errorf("invalid Google Chat Webhook URL, missing spaces")
-	}
-	if s[2] != "spaces" {
-		return nil, fmt.Errorf("invalid Google Chat Webhook URL, unsupported space: %s", s[2])
-	}
-
-	r = regexp.MustCompile(`spaces/(.*?)/messages`)
-	groups := r.FindStringSubmatch(u.Path)
-	if len(groups) < 1 {
-		return nil, fmt.Errorf("invalid Google Chat Webhook URL, invalid spaceID")
-	}
-	spaceID := groups[1]
-	if spaceID == "" {
-		return nil, fmt.Errorf("invalid Google Chat Webhook URL, spaceID is empty")
+	if regexGroups[1] != "spaces" {
+		return nil, fmt.Errorf("invalid Google Chat Webhook URL, unsupported space: %s", regexGroups[1])
 	}
 
 	r = regexp.MustCompile(`/messages/$`)
 	if !r.MatchString(u.Path) {
 		return nil, fmt.Errorf("invalid Google Chat Webhook URL, url doesn't contains 'messages': %s", u.Path)
+	}
+
+	r = regexp.MustCompile(`spaces/(.*?)/messages`)
+	spaceIDGroups := r.FindStringSubmatch(u.Path)
+	if len(spaceIDGroups) < 2 {
+		return nil, fmt.Errorf("invalid Google Chat Webhook URL, invalid spaceID")
+	}
+	spaceID := spaceIDGroups[1]
+	if spaceID == "" || spaceID != regexGroups[2] || len(spaceID) < 5 || len(spaceID) > 20 {
+		return nil, fmt.Errorf("invalid Google Chat Webhook URL, spaceID is empty or invalid, spaceID: %s", spaceID)
 	}
 
 	key := u.Query().Get("key")
@@ -65,7 +67,7 @@ func NewWebhookURL(u *url.URL) (*WebhookURL, error) {
 	}, nil
 }
 
-func (w *WebhookURL) GetURL() string {
+func (w *WebhookURL) String() string {
 	return w.URL.String()
 }
 

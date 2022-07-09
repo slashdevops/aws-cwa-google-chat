@@ -41,6 +41,19 @@ func TestNewWebhookURL(t *testing.T) {
 			wantErr: false,
 		},
 		{
+			name: "invalid URL, invalid path",
+			args: args{
+				u: &url.URL{
+					Scheme:   "https",
+					Host:     "chat.googleapis.com",
+					Path:     "/wherever",
+					RawQuery: "key=key&token=token",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
 			name: "invalid URL, unsupported API Version",
 			args: args{
 				u: &url.URL{
@@ -85,7 +98,20 @@ func TestNewWebhookURL(t *testing.T) {
 				u: &url.URL{
 					Scheme:   "https",
 					Host:     "chat.googleapis.com",
-					Path:     "/v1/spaces/messages/",
+					Path:     "/v1/spaces/spaceID/wherever/",
+					RawQuery: "key=key&token=token",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "invalid URL, SpaceID too long",
+			args: args{
+				u: &url.URL{
+					Scheme:   "https",
+					Host:     "chat.googleapis.com",
+					Path:     "/v1/spaces/asdfjbuasdfnvouhsfdioasdiof/messages/",
 					RawQuery: "key=key&token=token",
 				},
 			},
@@ -98,8 +124,34 @@ func TestNewWebhookURL(t *testing.T) {
 				u: &url.URL{
 					Scheme:   "https",
 					Host:     "chat.googleapis.com",
-					Path:     "/v1/spaces/spaceID/",
+					Path:     "/v1/spaces/spaceID/wherever/",
 					RawQuery: "key=key&token=token",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "invalid URL, key is not present in the query string",
+			args: args{
+				u: &url.URL{
+					Scheme:   "https",
+					Host:     "chat.googleapis.com",
+					Path:     "/v1/spaces/spaceID/messages/",
+					RawQuery: "nokey=key&token=token",
+				},
+			},
+			want:    nil,
+			wantErr: true,
+		},
+		{
+			name: "invalid URL, token is not present in the query string",
+			args: args{
+				u: &url.URL{
+					Scheme:   "https",
+					Host:     "chat.googleapis.com",
+					Path:     "/v1/spaces/spaceID/messages/",
+					RawQuery: "key=key&notoken=token",
 				},
 			},
 			want:    nil,
@@ -117,5 +169,95 @@ func TestNewWebhookURL(t *testing.T) {
 				t.Errorf("NewWebhookURL() = %v, want %v", got, tt.want)
 			}
 		})
+	}
+}
+
+func TestNewWebhookURL_String(t *testing.T) {
+	u := &url.URL{
+		Scheme:   "https",
+		Host:     "chat.googleapis.com",
+		Path:     "/v1/spaces/spaceID/messages/",
+		RawQuery: "key=key&token=token",
+	}
+
+	got, err := NewWebhookURL(u)
+	if err != nil {
+		t.Errorf("NewWebhookURL() error = %v", err)
+	}
+
+	if got.String() != u.String() {
+		t.Errorf("NewWebhookURL.String() = %v, want %v", got, u)
+	}
+}
+
+func TestNewWebhookURL_GetQuery(t *testing.T) {
+	u := &url.URL{
+		Scheme:   "https",
+		Host:     "chat.googleapis.com",
+		Path:     "/v1/spaces/spaceID/messages/",
+		RawQuery: "key=key&token=token",
+	}
+
+	got, err := NewWebhookURL(u)
+	if err != nil {
+		t.Errorf("NewWebhookURL() error = %v", err)
+	}
+
+	if got.GetQuery() != u.RawQuery {
+		t.Errorf("NewWebhookURL.GetQuery() = %v, want %v", got, u)
+	}
+}
+
+func TestNewWebhookURL_GetSpaceID(t *testing.T) {
+	u := &url.URL{
+		Scheme:   "https",
+		Host:     "chat.googleapis.com",
+		Path:     "/v1/spaces/spaceID/messages/",
+		RawQuery: "key=key&token=token",
+	}
+
+	got, err := NewWebhookURL(u)
+	if err != nil {
+		t.Errorf("NewWebhookURL() error = %v", err)
+	}
+
+	if got.GetSpaceID() != "spaceID" {
+		t.Errorf("NewWebhookURL.GetSpaceID() = %v, want %v", got, u)
+	}
+}
+
+func TestNewWebhookURL_GetKey(t *testing.T) {
+	u := &url.URL{
+		Scheme:   "https",
+		Host:     "chat.googleapis.com",
+		Path:     "/v1/spaces/spaceID/messages/",
+		RawQuery: "key=key&token=token",
+	}
+
+	got, err := NewWebhookURL(u)
+	if err != nil {
+		t.Errorf("NewWebhookURL() error = %v", err)
+	}
+
+	if got.GetKey() != "key" {
+		t.Errorf("NewWebhookURL.GetKey() = %v, want %v", got, u)
+	}
+}
+
+func TestNewWebhookURL_GetToken(t *testing.T) {
+	u := &url.URL{
+		Scheme:   "https",
+		Host:     "chat.googleapis.com",
+		Path:     "/v1/spaces/spaceID/messages/",
+		RawQuery: "key=key&token=token",
+	}
+
+	got, err := NewWebhookURL(u)
+	if err != nil {
+		t.Errorf("NewWebhookURL() error = %v", err)
+	}
+
+	if got.GetToken() != "token" {
+		t.Errorf("NewWebhookURL.GetToken() = %v, want %v", got, u)
 	}
 }
