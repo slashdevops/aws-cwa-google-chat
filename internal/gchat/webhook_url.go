@@ -43,7 +43,7 @@ func NewWebhookURL(u *url.URL) (*WebhookURL, error) {
 
 	r = regexp.MustCompile(`/messages/$`)
 	if !r.MatchString(u.Path) {
-		return nil, fmt.Errorf("invalid Google Chat Webhook URL, url path doesn't contains 'messages': %s", u.Path)
+		return nil, fmt.Errorf("invalid Google Chat Webhook URL, url doesn't contains 'messages': %s", u.Path)
 	}
 
 	key := u.Query().Get("key")
