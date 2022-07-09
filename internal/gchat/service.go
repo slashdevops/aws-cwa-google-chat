@@ -16,9 +16,10 @@ type Service struct {
 	client     HTTPClient
 	webhookURL *WebhookURL
 	card       *Card
+	threaded   bool
 }
 
-func NewService(client HTTPClient, webhookURL *WebhookURL, card *Card) *Service {
+func NewService(client HTTPClient, webhookURL *WebhookURL, card *Card, threaded bool) *Service {
 	if client == nil {
 		log.Info("using default http.Client")
 		client = &http.Client{}
@@ -35,10 +36,15 @@ func NewService(client HTTPClient, webhookURL *WebhookURL, card *Card) *Service 
 		client:     client,
 		webhookURL: webhookURL,
 		card:       card,
+		threaded:   threaded,
 	}
 }
 
 func (s *Service) SendCard() error {
+	if s.threaded {
+		s.webhookURL.SetThreadKey(s.card.GetName())
+	}
+
 	resp, err := s.client.Post(s.webhookURL.String(), "application/json", s.card.Render())
 	if err != nil {
 		log.Errorf("cannot send card: %s", err)

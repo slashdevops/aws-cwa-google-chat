@@ -12,6 +12,7 @@ type WebhookURL struct {
 	APIVersion string
 	Key        string
 	Token      string
+	ThreadKey  string
 }
 
 func NewWebhookURL(u *url.URL) (*WebhookURL, error) {
@@ -85,4 +86,15 @@ func (w *WebhookURL) GetKey() string {
 
 func (w *WebhookURL) GetToken() string {
 	return w.Token
+}
+
+func (w *WebhookURL) GetThreadKey() string {
+	return w.ThreadKey
+}
+
+func (w *WebhookURL) SetThreadKey(key string) {
+	w.ThreadKey = key
+	qp := w.URL.Query()
+	qp.Add("threadKey", key)
+	w.URL.RawQuery = qp.Encode()
 }

@@ -261,3 +261,49 @@ func TestNewWebhookURL_GetToken(t *testing.T) {
 		t.Errorf("NewWebhookURL.GetToken() = %v, want %v", got, u)
 	}
 }
+
+func TestNewWebhookURL_GetThreadKey(t *testing.T) {
+	u := &url.URL{
+		Scheme:   "https",
+		Host:     "chat.googleapis.com",
+		Path:     "/v1/spaces/spaceID/messages/",
+		RawQuery: "key=key&token=token",
+	}
+
+	got, err := NewWebhookURL(u)
+	if err != nil {
+		t.Errorf("NewWebhookURL() error = %v", err)
+	}
+
+	if got.GetThreadKey() != "" {
+		t.Errorf("NewWebhookURL.GetThreadKey() = %v, want %v", got, u)
+	}
+}
+
+func TestNewWebhookURL_SetThreadKey(t *testing.T) {
+	u := &url.URL{
+		Scheme:   "https",
+		Host:     "chat.googleapis.com",
+		Path:     "/v1/spaces/spaceID/messages/",
+		RawQuery: "key=key&token=token",
+	}
+
+	got, err := NewWebhookURL(u)
+	if err != nil {
+		t.Errorf("NewWebhookURL() error = %v", err)
+	}
+
+	if got.ThreadKey != "" {
+		t.Errorf("NewWebhookURL.ThreadKey = %v, want %v", got, u)
+	}
+
+	got.SetThreadKey("threadKey")
+
+	if got.ThreadKey != "threadKey" {
+		t.Errorf("NewWebhookURL.ThreadKey = %v, want %v", got, u)
+	}
+
+	if got.URL.Query().Get("threadKey") != "threadKey" {
+		t.Errorf("NewWebhookURL.URL.Query().Get(threadKey) = %v, want %v", got, u)
+	}
+}

@@ -22,3 +22,12 @@ func (c *Card) Render() io.Reader {
 	c.c.Header.Title = "Title"
 	return nil
 }
+
+func (c *Card) SetHeader(title, subtitle string) {
+	c.c.Header.Title = title
+	c.c.Header.Subtitle = subtitle
+}
+
+func (c *Card) GetName() string {
+	return "NotImplements"
+}

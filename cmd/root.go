@@ -201,7 +201,7 @@ func handleEventRequest(e gchat.Event) error {
 		log.Errorf("cannot create webhook: %s", err)
 		return err
 	}
-	s := gchat.NewService(h, w, c)
+	s := gchat.NewService(h, w, c, cfg.UseChatThreads)
 
 	return s.SendCard()
 }
