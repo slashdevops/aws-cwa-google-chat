@@ -3,6 +3,7 @@ package gchat
 import (
 	"io"
 	"net/http"
+	"net/url"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -14,11 +15,11 @@ type HTTPClient interface {
 
 type Service struct {
 	client     HTTPClient
-	webhookURL string
+	webhookURL *url.URL
 	card       *Card
 }
 
-func NewService(client HTTPClient, webhookURL string, card *Card) *Service {
+func NewService(client HTTPClient, webhookURL *url.URL, card *Card) *Service {
 	if client == nil {
 		log.Info("using default http.Client")
 		client = &http.Client{}
@@ -27,7 +28,7 @@ func NewService(client HTTPClient, webhookURL string, card *Card) *Service {
 		log.Info("using default card")
 		card = NewCard(nil)
 	}
-	if webhookURL == "" {
+	if webhookURL == nil {
 		log.Fatalf("webhookURL is required")
 	}
 
@@ -39,7 +40,7 @@ func NewService(client HTTPClient, webhookURL string, card *Card) *Service {
 }
 
 func (s *Service) SendCard() error {
-	resp, err := s.client.Post(s.webhookURL, "application/json", s.card.Render())
+	resp, err := s.client.Post(s.webhookURL.String(), "application/json", s.card.Render())
 	if err != nil {
 		log.Errorf("cannot send card: %s", err)
 		return err

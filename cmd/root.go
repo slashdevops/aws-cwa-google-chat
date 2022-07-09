@@ -19,6 +19,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -68,7 +69,6 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogLevel, "log-level", "l", config.DefaultLogLevel, "set the log level [panic|fatal|error|warn|info|debug|trace]")
 
 	rootCmd.PersistentFlags().StringVarP(&cfg.WebhookURL, "webhook-url", "u", config.DefaultWebhookURL, "Incoming Webhook URL from Google Chat")
-	rootCmd.PersistentFlags().StringVarP(&cfg.AWSAlarmsSource, "aws-alarms-source", "s", config.DefaultAWSAlarmSource, "Alarm source, the AWS Service use as AWS CloudWatch event source [sns|eventbridge]")
 }
 
 // initConfig reads in config file and ENV variables.
@@ -80,12 +80,11 @@ func initConfig() {
 		"log_format",
 		"debug",
 		"webhook_url",
-		"aws_alarms_source",
 	}
 
 	for _, e := range envVars {
 		if err := viper.BindEnv(e); err != nil {
-			log.Fatalf(errors.Wrap(err, "cannot bind environment variable").Error())
+			log.Panicf(errors.Wrap(err, "cannot bind environment variable").Error())
 		}
 	}
 
@@ -123,7 +122,7 @@ func initConfig() {
 	}
 
 	if err := viper.Unmarshal(&cfg); err != nil {
-		log.Fatalf(errors.Wrap(err, "cannot unmarshal config").Error())
+		log.Panicf(errors.Wrap(err, "cannot unmarshal config").Error())
 	}
 
 	switch strings.ToLower(cfg.LogFormat) {
@@ -146,11 +145,21 @@ func initConfig() {
 	}
 
 	if cfg.WebhookURL == "" {
-		log.Fatalf("webhook-url is required")
+		log.Panic("webhook-url is required")
 	}
+
+	u, err := url.Parse(cfg.WebhookURL)
+	if err != nil {
+		log.Panicf("invalid webhook-url: %s", err)
+	}
+	cfg.ChatWebhookURL = u
 }
 
 func handlerRequest(ctx context.Context, b json.RawMessage) error {
+	var err error
+	var snsEvent events.SNSEvent
+	var cwaEvent events.CloudWatchEvent
+
 	log.WithFields(
 		log.Fields{
 			"functionName":    ctx.Value("FunctionName"),
@@ -158,10 +167,6 @@ func handlerRequest(ctx context.Context, b json.RawMessage) error {
 			"request":         string(b),
 		},
 	).Debug("handlerRequest")
-
-	var err error
-	var snsEvent events.SNSEvent
-	var cwaEvent events.CloudWatchEvent
 
 	if err = json.Unmarshal(b, &snsEvent); err == nil {
 		e := event.NewSNSAlarm(&snsEvent)
@@ -181,9 +186,9 @@ func handlerRequest(ctx context.Context, b json.RawMessage) error {
 }
 
 func handleEventRequest(e gchat.Event) error {
-	c := gchat.NewCard(e)
 	h := &http.Client{}
-	s := gchat.NewService(h, cfg.WebhookURL, c)
+	c := gchat.NewCard(e)
+	s := gchat.NewService(h, cfg.ChatWebhookURL, c)
 
 	return s.SendCard()
 }

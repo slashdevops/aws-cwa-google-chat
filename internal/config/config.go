@@ -1,5 +1,7 @@
 package config
 
+import "net/url"
+
 const (
 	// DefaultIsLambda is the program execute as a lambda function?
 	DefaultIsLambda = false
@@ -20,9 +22,6 @@ const (
 
 	// DefaultWebhookURL is the default incoming webhook url.
 	DefaultWebhookURL = ""
-
-	// DefaultAlarmSource is the source AWS service which is the source of the alarms events [sns|eventbridge]
-	DefaultAWSAlarmSource = "sns"
 )
 
 // Config represents the configuration of the application.
@@ -34,20 +33,18 @@ type Config struct {
 	LogLevel  string `mapstructure:"log_level" json:"log_level" yaml:"log_level"`
 	LogFormat string `mapstructure:"log_format" json:"log_format" yaml:"log_format"`
 
-	WebhookURL string `mapstructure:"webhook_url" json:"webhook_url" yaml:"webhook_url"`
-
-	AWSAlarmsSource string `mapstructure:"aws_alarms_source" json:"aws_alarms_source" yaml:"aws_alarms_source"`
+	WebhookURL     string   `mapstructure:"webhook_url" json:"webhook_url" yaml:"webhook_url"`
+	ChatWebhookURL *url.URL `mapstructure:"-" json:"-" yaml:"-"`
 }
 
 // New returns a new Config
 func New() Config {
 	return Config{
-		ConfigFile:      DefaultConfigFile,
-		IsLambda:        DefaultIsLambda,
-		Debug:           DefaultDebug,
-		LogLevel:        DefaultLogLevel,
-		LogFormat:       DefaultLogFormat,
-		WebhookURL:      DefaultWebhookURL,
-		AWSAlarmsSource: DefaultAWSAlarmSource,
+		ConfigFile: DefaultConfigFile,
+		IsLambda:   DefaultIsLambda,
+		Debug:      DefaultDebug,
+		LogLevel:   DefaultLogLevel,
+		LogFormat:  DefaultLogFormat,
+		WebhookURL: DefaultWebhookURL,
 	}
 }
