@@ -18,14 +18,15 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
+	"time"
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/hashicorp/go-retryablehttp"
 	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 	"github.com/slashdevops/aws-cwa-google-chat/internal/config"
@@ -194,14 +195,26 @@ func handlerRequest(ctx context.Context, b json.RawMessage) error {
 }
 
 func handleEventRequest(e gchat.Event) error {
-	h := &http.Client{}
+	// httpClient
+	retryClient := retryablehttp.NewClient()
+	retryClient.RetryMax = 10
+	retryClient.RetryWaitMin = time.Millisecond * 100
+
+	if cfg.Debug {
+		retryClient.Logger = log.StandardLogger()
+	} else {
+		retryClient.Logger = nil
+	}
+
+	httpClient := retryClient.StandardClient()
+
 	c := gchat.NewCard(e)
 	w, err := gchat.NewWebhookURL(cfg.ChatWebhookURL)
 	if err != nil {
 		log.Errorf("cannot create webhook: %s", err)
 		return err
 	}
-	s := gchat.NewService(h, w, c, cfg.UseChatThreads)
+	s := gchat.NewService(httpClient, w, c, cfg.UseChatThreads)
 
 	return s.SendCard()
 }

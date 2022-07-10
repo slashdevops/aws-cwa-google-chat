@@ -11,6 +11,7 @@
     "Infof",
     "logrus",
     "mapstructure",
+    "retryablehttp",
     "sirupsen",
     "Warnf"
   ]
