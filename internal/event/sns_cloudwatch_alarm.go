@@ -18,6 +18,19 @@ func NewSNSAlarm(snsEvent *events.SNSEvent) *SNSAlarm {
 	}
 }
 
+func (s *SNSAlarm) GetSource() string {
+	return "SNS"
+}
+
+func (s *SNSAlarm) GetAlarmName() string {
+	msg, err := s.GetMessage()
+	if err != nil {
+		return ""
+	}
+
+	return msg.AlarmName
+}
+
 func (s *SNSAlarm) GetMessage() (*events.CloudWatchAlarmSNSPayload, error) {
 	quotedMessage := s.SNSEvent.Records[0].SNS.Message
 	stringMessage, err := strconv.Unquote(quotedMessage)

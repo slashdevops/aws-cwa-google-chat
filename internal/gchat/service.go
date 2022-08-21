@@ -1,10 +1,19 @@
 package gchat
 
 import (
+	"bytes"
+	"errors"
 	"io"
 	"net/http"
 
 	log "github.com/sirupsen/logrus"
+	"google.golang.org/api/chat/v1"
+)
+
+var (
+	ErrHTTPClientIsNil = errors.New("http client is nil")
+	ErrWebhookURLIsNil = errors.New("webhookURL is nil")
+	ErrCardIsNil       = errors.New("card is nil")
 )
 
 type HTTPClient interface {
@@ -15,21 +24,22 @@ type HTTPClient interface {
 type Service struct {
 	client     HTTPClient
 	webhookURL *WebhookURL
-	card       *Card
+	card       *chat.Card
 	threaded   bool
 }
 
-func NewService(client HTTPClient, webhookURL *WebhookURL, card *Card, threaded bool) *Service {
+func NewService(client HTTPClient, webhookURL *WebhookURL, card *chat.Card, threaded bool) (*Service, error) {
 	if client == nil {
-		log.Info("using default http.Client")
-		client = &http.Client{}
-	}
-	if card == nil {
-		log.Info("using default card")
-		card = NewCard(nil)
+		log.Error("using default http.Client")
+		return nil, ErrHTTPClientIsNil
 	}
 	if webhookURL == nil {
 		log.Fatalf("webhookURL is required")
+		return nil, ErrWebhookURLIsNil
+	}
+	if card == nil {
+		log.Error("using default card")
+		return nil, ErrCardIsNil
 	}
 
 	return &Service{
@@ -37,15 +47,20 @@ func NewService(client HTTPClient, webhookURL *WebhookURL, card *Card, threaded 
 		webhookURL: webhookURL,
 		card:       card,
 		threaded:   threaded,
-	}
+	}, nil
 }
 
 func (s *Service) SendCard() error {
 	if s.threaded {
-		s.webhookURL.SetThreadKey(s.card.GetName())
+		s.webhookURL.SetThreadKey(s.card.Name)
 	}
 
-	resp, err := s.client.Post(s.webhookURL.String(), "application/json", s.card.Render())
+	payload, err := s.card.MarshalJSON()
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.client.Post(s.webhookURL.String(), "application/json", bytes.NewReader(payload))
 	if err != nil {
 		log.Errorf("cannot send card: %s", err)
 		return err

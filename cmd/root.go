@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+	http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -69,7 +69,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogFormat, "log-format", "f", config.DefaultLogFormat, "set the log format")
 	rootCmd.PersistentFlags().StringVarP(&cfg.LogLevel, "log-level", "l", config.DefaultLogLevel, "set the log level [panic|fatal|error|warn|info|debug|trace]")
 
-	rootCmd.PersistentFlags().StringVarP(&cfg.WebhookURL, "webhook-url", "u", config.DefaultWebhookURL, "incoming Webhook URL from Google Chat")
+	rootCmd.PersistentFlags().StringVarP(&cfg.WebhookURL, "webhook-url", "u", config.DefaultWebhookURL, "incoming Webhook URL from Google Chat Space")
 
 	rootCmd.PersistentFlags().BoolVarP(
 		&cfg.UseChatThreads,
@@ -89,6 +89,7 @@ func initConfig() {
 		"log_format",
 		"debug",
 		"webhook_url",
+		"use_chat_threads",
 	}
 
 	for _, e := range envVars {
@@ -164,7 +165,7 @@ func initConfig() {
 	cfg.ChatWebhookURL = u
 }
 
-func handlerRequest(ctx context.Context, b json.RawMessage) error {
+func handlerRequest(ctx context.Context, raw json.RawMessage) error {
 	var err error
 	var snsEvent events.SNSEvent
 	var cwaEvent events.CloudWatchEvent
@@ -173,29 +174,28 @@ func handlerRequest(ctx context.Context, b json.RawMessage) error {
 		log.Fields{
 			"functionName":    ctx.Value("FunctionName"),
 			"functionVersion": ctx.Value("FunctionVersion"),
-			"request":         string(b),
+			"request":         string(raw),
 		},
 	).Debug("handlerRequest")
 
-	if err = json.Unmarshal(b, &snsEvent); err == nil {
+	if err = json.Unmarshal(raw, &snsEvent); err == nil {
 		e := event.NewSNSAlarm(&snsEvent)
 		return handleEventRequest(e)
 	}
 
-	if err = json.Unmarshal(b, &cwaEvent); err == nil {
+	if err = json.Unmarshal(raw, &cwaEvent); err == nil {
 		e := event.NewSNSCloudWatchEvent(&cwaEvent)
 		return handleEventRequest(e)
 	}
 
 	if err != nil {
-		log.Errorf("cannot unmarshal request: %s", err)
+		log.Errorf("unable to marshall event: %s, error: %s", string(raw), err)
 	}
 
 	return err
 }
 
-func handleEventRequest(e gchat.Event) error {
-	// httpClient
+func handleEventRequest(e event.Eventer) error {
 	retryClient := retryablehttp.NewClient()
 	retryClient.RetryMax = 10
 	retryClient.RetryWaitMin = time.Millisecond * 100
@@ -208,13 +208,31 @@ func handleEventRequest(e gchat.Event) error {
 
 	httpClient := retryClient.StandardClient()
 
-	c := gchat.NewCard(e)
+	cardHeader := gchat.CardHeaderBuilder().
+		WithTitle("CloudWatch Alarm").
+		WithSubtitle("CloudWatch Alarm").
+		Build()
+
+	cardSections := gchat.CardSectionBuilder().
+		WithHeader("This is a section header").
+		Build()
+
+	card := gchat.CardBuilder(e.GetSource()).
+		WithHeader(cardHeader).
+		WithSections(cardSections).
+		Build()
+
 	w, err := gchat.NewWebhookURL(cfg.ChatWebhookURL)
 	if err != nil {
 		log.Errorf("cannot create webhook: %s", err)
 		return err
 	}
-	s := gchat.NewService(httpClient, w, c, cfg.UseChatThreads)
+
+	s, err := gchat.NewService(httpClient, w, card, cfg.UseChatThreads)
+	if err != nil {
+		log.Errorf("cannot create service: %s", err)
+		return err
+	}
 
 	return s.SendCard()
 }

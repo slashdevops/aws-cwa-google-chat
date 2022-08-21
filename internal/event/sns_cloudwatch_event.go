@@ -14,6 +14,19 @@ func NewSNSCloudWatchEvent(snsEvent *events.CloudWatchEvent) *SNSCloudWatchEvent
 	}
 }
 
+func (s *SNSCloudWatchEvent) GetSource() string {
+	return "CloudWatchEvent"
+}
+
+func (s *SNSCloudWatchEvent) GetAlarmName() string {
+	msg, err := s.GetMessage()
+	if err != nil {
+		return ""
+	}
+
+	return msg.ID
+}
+
 func (s *SNSCloudWatchEvent) GetMessage() (*events.CloudWatchEvent, error) {
 	return s.CloudWatchEvent, nil
 }
