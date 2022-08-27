@@ -179,13 +179,21 @@ func handlerRequest(ctx context.Context, raw json.RawMessage) error {
 	).Debug("handlerRequest")
 
 	if err = json.Unmarshal(raw, &snsEvent); err == nil {
-		e := event.NewSNSAlarm(&snsEvent)
-		return handleEventRequest(e)
+		ev, e := event.NewSNSAlarm(&snsEvent)
+		if e != nil {
+			log.Errorf("error creating SNS Alarm event: %s", e)
+			return e
+		}
+		return handleEventRequest(ev)
 	}
 
 	if err = json.Unmarshal(raw, &cwaEvent); err == nil {
-		e := event.NewSNSCloudWatchEvent(&cwaEvent)
-		return handleEventRequest(e)
+		ev, e := event.NewSNSCloudWatchEvent(&cwaEvent)
+		if e != nil {
+			log.Errorf("error creating SNS CloudWatch Event: %s", e)
+			return e
+		}
+		return handleEventRequest(ev)
 	}
 
 	if err != nil {
@@ -197,8 +205,9 @@ func handlerRequest(ctx context.Context, raw json.RawMessage) error {
 
 func handleEventRequest(e event.Eventer) error {
 	retryClient := retryablehttp.NewClient()
-	retryClient.RetryMax = 10
-	retryClient.RetryWaitMin = time.Millisecond * 100
+	retryClient.RetryMax = 5
+	retryClient.RetryWaitMin = time.Second * 1
+	retryClient.RetryWaitMax = time.Second * 4
 
 	if cfg.Debug {
 		retryClient.Logger = log.StandardLogger()
@@ -211,6 +220,8 @@ func handleEventRequest(e event.Eventer) error {
 	cardHeader := gchat.CardHeaderBuilder().
 		WithTitle("CloudWatch Alarm").
 		WithSubtitle("CloudWatch Alarm").
+		WithImageURL("https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png").
+		WithImageStyle("IMAGE").
 		Build()
 
 	cardSections := gchat.CardSectionBuilder().
